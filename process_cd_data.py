@@ -1,6 +1,8 @@
 import sys
 import re
 import os
+from omnicanvas.color import hsl_to_rgb
+import matplotlib.pyplot as plt
 print("")
 
 # Define function for opening data file and getting relevant data
@@ -68,6 +70,14 @@ if __name__ == "__main__":
         print("Where should the output .dat be saved?\n")
         sys.exit()
     output_path = sys.argv[3]
+    if len(sys.argv) > 4:
+        output_chart_path = sys.argv[4]
+    else:
+        output_chart_path = None
+    if len(sys.argv) > 5:
+        chart_title = sys.argv[5]
+    else:
+        chart_title = output_chart_path
 
     # Get data files
     blank_data_files = sorted([
@@ -115,3 +125,30 @@ if __name__ == "__main__":
     # Write to file
     with open(output_path, "w") as f:
         f.write("\n".join(lines))
+
+    # Make chart
+    if output_chart_path:
+        max_temp = int(temperatures[-2])
+        min_temp = int(temperatures[0])
+        relative_temps = [
+         1 - ((int(temp) - min_temp) / (max_temp - min_temp)) for temp in temperatures[:-1]
+        ]
+        color_scale = [
+         hsl_to_rgb(0.45 * 360 * temp, 100, 50) for temp in relative_temps
+        ] + ["#0000FF"]
+        for index, temp in enumerate(temperatures):
+            y = [line.split(" ")[(index * 2) + 1] for line in lines[1:]]
+            y_error = [line.split(" ")[(index * 2) + 2] for line in lines[1:]]
+            plt.plot(wavelengths, y, color=color_scale[index], label=temp + "°C")
+            plt.fill_between(
+             wavelengths,
+             [float(val) - (float(y_error[index]) / 2) for index, val in enumerate(y)],
+             [float(val) + (float(y_error[index]) / 2) for index, val in enumerate(y)],
+             color=color_scale[index], alpha=0.1
+            )
+        plt.grid(True)
+        plt.xlabel("Wavelength (nm)")
+        plt.ylabel("CD (AU)")
+        plt.legend(prop={'size':7})
+        plt.title(chart_title)
+        plt.savefig(output_chart_path, dpi=500)
