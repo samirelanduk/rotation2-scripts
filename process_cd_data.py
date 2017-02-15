@@ -1,20 +1,7 @@
 import sys
 import re
+import os
 print("")
-
-# Get arguments
-if len(sys.argv) <= 1:
-    print("Please provide a path to the sample data\n")
-    sys.exit()
-sample_path = sys.argv[1]
-if len(sys.argv) <= 2:
-    print("Please provide a path to the blank data\n")
-    sys.exit()
-blank_path = sys.argv[2]
-if len(sys.argv) <= 3:
-    print("Where should the output .dat be saved?\n")
-    sys.exit()
-output_path = sys.argv[3]
 
 # Define function for opening data file and getting relevant data
 def open_data_file(path):
@@ -66,3 +53,65 @@ def subtract_blank_curve(blank_run, sample_run):
          "error": sample_scan["error"] + blank_scan["error"]
         })
     return run_average
+
+if __name__ == "__main__":
+    # Get arguments
+    if len(sys.argv) <= 1:
+        print("Please provide a path to the sample data\n")
+        sys.exit()
+    sample_path = sys.argv[1]
+    if len(sys.argv) <= 2:
+        print("Please provide a path to the blank data\n")
+        sys.exit()
+    blank_path = sys.argv[2]
+    if len(sys.argv) <= 3:
+        print("Where should the output .dat be saved?\n")
+        sys.exit()
+    output_path = sys.argv[3]
+
+    # Get data files
+    blank_data_files = sorted([
+     f for f in os.listdir(blank_path) if f.endswith(".dat")
+    ])
+    sample_data_files = sorted([
+     f for f in os.listdir(sample_path) if f.endswith(".dat")
+    ])
+    assert blank_data_files == sample_data_files
+
+    # Get temperatures and wavelengths
+    temperatures = [f.split(".")[0] for f in blank_data_files]
+    wavelengths = [
+     run["wavelength"] for run in open_data_file("%s/20.dat" % blank_path)[0]
+    ]
+
+    # Create header line
+    head = " ".join(["%s_signal %s_error" % (temp, temp) for temp in temperatures])
+    head = "wavelength " + head
+    lines = [head]
+
+    # Open up all the data files
+    blank_data_files = [average_runs(
+     open_data_file("%s/%s" % (blank_path, data))
+    ) for data in blank_data_files]
+    sample_data_files = [average_runs(
+     open_data_file("%s/%s" % (sample_path, data))
+    ) for data in sample_data_files]
+    data_files = zip(blank_data_files, sample_data_files)
+    data = [subtract_blank_curve(
+     blank_run, sample_run
+    ) for blank_run, sample_run in data_files]
+
+    # Build up data lines
+    for wavelength in wavelengths:
+        line = [str(wavelength)]
+        for temperature_run in data:
+            scan = [
+             s for s in temperature_run if s["wavelength"] == wavelength
+            ][0]
+            line.append(str(scan["signal"]))
+            line.append(str(scan["error"]))
+        lines.append(" ".join(line))
+
+    # Write to file
+    with open(output_path, "w") as f:
+        f.write("\n".join(lines))
