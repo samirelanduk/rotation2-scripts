@@ -38,3 +38,23 @@ def open_data_file(path):
             runs.append(run)
             run = []
     runs.append(run)
+    return runs
+
+# Define function for averaging a series of runs
+def average_runs(runs):
+    wavelengths = [datum["wavelength"] for datum in runs[0]]
+    run_average = []
+    for wavelength in wavelengths:
+        scans = [[
+         datum for datum in run if datum["wavelength"] == wavelength][0
+        ] for run in runs]
+        run_average.append({
+         "wavelength": wavelength,
+         "signal": sum([scan["signal"] for scan in scans]) / len(scans),
+         "error": sum([scan["error"] for scan in scans]) / len(scans)
+        })
+    return run_average
+
+
+runs = open_data_file(blank_path + "/20.dat")
+average_runs(runs)
