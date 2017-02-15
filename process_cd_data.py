@@ -55,6 +55,14 @@ def average_runs(runs):
         })
     return run_average
 
-
-runs = open_data_file(blank_path + "/20.dat")
-average_runs(runs)
+# Define function for subtracting blank curve from sample curve
+def subtract_blank_curve(blank_run, sample_run):
+    run_average = []
+    for index, blank_scan in enumerate(blank_run):
+        sample_scan = sample_run[index]
+        run_average.append({
+         "wavelength": blank_scan["wavelength"],
+         "signal": sample_scan["signal"] - blank_scan["signal"],
+         "error": sample_scan["error"] + blank_scan["error"]
+        })
+    return run_average
