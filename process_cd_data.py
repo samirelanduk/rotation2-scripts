@@ -142,8 +142,8 @@ if __name__ == "__main__":
             plt.plot(wavelengths, y, color=color_scale[index], label=temp + "°C")
             plt.fill_between(
              wavelengths,
-             [float(val) - (float(y_error[index]) / 2) for index, val in enumerate(y)],
-             [float(val) + (float(y_error[index]) / 2) for index, val in enumerate(y)],
+             [float(val) - (float(y_error[index])) for index, val in enumerate(y)],
+             [float(val) + (float(y_error[index])) for index, val in enumerate(y)],
              color=color_scale[index], alpha=0.1
             )
         plt.grid(True)
