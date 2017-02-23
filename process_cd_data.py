@@ -152,3 +152,25 @@ if __name__ == "__main__":
         plt.legend(prop={'size':7})
         plt.title(chart_title)
         plt.savefig(output_chart_path, dpi=500)
+
+        location = "/".join(output_chart_path.split("/")[:-1])
+        run_name = output_chart_path.split("/")[-1].split(".")[0]
+        peak_wavelengths = [194, 209, 224]
+        for peak_wavelength in peak_wavelengths:
+            line = [l for l in lines[1:] if float(l.split()[0]) == peak_wavelength][0]
+            temps = [float(x) for x in temperatures[:-1]]
+            y = [float(x) for x in line.split()[1:-2][::2]]
+            y_error = [float(x) for x in line.split()[2:-2][::2]]
+            plt.clf()
+            plt.plot(temps, y, color="#4A9586")
+            plt.fill_between(
+             temps,
+             [float(val) - (float(y_error[index])) for index, val in enumerate(y)],
+             [float(val) + (float(y_error[index])) for index, val in enumerate(y)],
+             color="#4A9586", alpha=0.1
+            )
+            plt.grid(True)
+            plt.xlabel("Temperature (°C)")
+            plt.ylabel("CD (AU)")
+            plt.title("%s at wavelength %i nm" % (chart_title, peak_wavelength))
+            plt.savefig("%s/%s_%i.png" % (location, run_name, peak_wavelength), dpi=500)
