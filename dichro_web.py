@@ -51,7 +51,7 @@ try:
     data_file_input = [
      i for i in inputs if i.get_attribute("name") == "FILE"
     ][0]
-    name_input.send_keys(data_files[0].split("/")[-1])
+    name_input.send_keys(data_files[0].split("/")[-1].split(".")[0])
     data_file_input.send_keys(data_files[0])
 
     # Describe data file
@@ -96,6 +96,33 @@ try:
      i for i in inputs if i.get_attribute("name") == "QUALDATA"
     ][0]
     lowest_nm.send_keys(str(low_wavelength))
+
+    # Choose analysis methods
+    programs = [
+     s for s in selects if s.get_attribute("name") == "prog"
+    ][0]
+    programs = Select(programs)
+    programs.select_by_visible_text("SELCON3")
+    reference_sets = [
+     s for s in selects if s.get_attribute("name") == "basis"
+    ][0]
+    reference_sets = Select(reference_sets)
+    reference_sets.select_by_visible_text(
+     "SMP180 (Optimised for 190-240 nm # Less nm required)"
+    )
+
+    # Set output units and submit
+    output_units = [
+     s for s in selects if s.get_attribute("name") == "output_units"
+    ][0]
+    output_units = Select(output_units)
+    output_units.select_by_visible_text("theta (machine units), mdeg")
+    submit = [
+     i for i in inputs if i.get_attribute("name") == "submit data"
+    ][0]
+    submit.click()
+    sleep(5)
+
 
 finally:
     browser.quit()
