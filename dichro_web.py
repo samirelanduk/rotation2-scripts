@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.support.ui import Select
 from time import sleep
 import os
 import sys
@@ -52,7 +53,49 @@ try:
     ][0]
     name_input.send_keys(data_files[0].split("/")[-1])
     data_file_input.send_keys(data_files[0])
-    sleep(5)
+
+    # Describe data file
+    selects = browser.find_elements_by_tag_name("select")
+    file_format = [
+     s for s in selects if s.get_attribute("name") == "FORMAT"
+    ][0]
+    file_format = Select(file_format)
+    file_format.select_by_visible_text("FREE (with preview)")
+    units = [
+     s for s in selects if s.get_attribute("name") == "units"
+    ][0]
+    units = Select(units)
+    units.select_by_visible_text("millidegrees / theta (machine units)")
+    with open(data_files[0]) as f:
+        data = f.read()
+    lines = data.split("\n")
+    lines = [line.strip() for line in lines if line.strip()]
+    high_wavelength = 10000
+    low_wavelength = 0
+    for line in lines:
+        try:
+            wavelength = float(line.split()[0])
+            if high_wavelength == 10000:
+                high_wavelength = wavelength
+            low_wavelength = wavelength
+        except ValueError:
+            pass
+    initial_wavelength = [
+     i for i in inputs if i.get_attribute("name") == "START"
+    ][0]
+    final_wavelength = [
+     i for i in inputs if i.get_attribute("name") == "END"
+    ][0]
+    initial_wavelength.send_keys(str(high_wavelength))
+    final_wavelength.send_keys(str(low_wavelength))
+    wavestep = [
+     i for i in inputs if i.get_attribute("name") == "WAVESTEP"
+    ][-1]
+    wavestep.click()
+    lowest_nm = [
+     i for i in inputs if i.get_attribute("name") == "QUALDATA"
+    ][0]
+    lowest_nm.send_keys(str(low_wavelength))
 
 finally:
     browser.quit()
