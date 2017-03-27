@@ -16,6 +16,10 @@ if len(sys.argv) <= 3:
     print("Please provide the temperature interval\n")
     sys.exit()
 temp_interval = float(sys.argv[3])
+if len(sys.argv) <= 4:
+    print("Please provide a label in the form Agent,Run,Sample\n")
+    sys.exit()
+agent, run, sample = sys.argv[4].split(",")
 
 # What are the files here?
 data_files = sorted([f for f in os.listdir(data_path) if f[-4:] == ".gen"])
@@ -48,5 +52,11 @@ for series in all_series:
     wavelengths = [line[0] for line in series]
     absorbance = [line[1] for line in series]
     plt.plot(wavelengths, absorbance, color=series[0][3], label=series[0][2])
+plt.grid(True)
+plt.xlabel("Wavelength (nm)")
+plt.ylabel("CD (AU)")
+plt.title("%s: Run %s, Sample %s" % (agent, run, sample))
+plt.xlim(all_series[0][-1][0], all_series[0][0][0])
+plt.ylim(-20, 40)
 plt.legend(prop={'size':7})
 plt.savefig(data_path + "/melt.png", dpi=500)
