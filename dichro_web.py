@@ -22,6 +22,14 @@ if len(sys.argv) < 5:
     print("What is the concentration in mg/ml?\n")
     sys.exit()
 concentration = float(sys.argv[4])
+if len(sys.argv) < 6:
+    print("What is the mean residue mass in Da?\n")
+    sys.exit()
+residue_mass = float(sys.argv[5])
+if len(sys.argv) < 7:
+    print("What is the pathlength in cm?\n")
+    sys.exit()
+pathlength = float(sys.argv[6])
 
 # Get the files
 files = os.listdir(location)
@@ -121,7 +129,28 @@ try:
      i for i in inputs if i.get_attribute("name") == "submit data"
     ][0]
     submit.click()
-    sleep(5)
+
+    # Provide mass, concentration, and pathlength
+    inputs = browser.find_elements_by_tag_name("input")
+    #84
+    mean_mass_input = [
+     i for i in inputs if i.get_attribute("name") == "MRW"
+    ][0]
+    concentration_input = [
+     i for i in inputs if i.get_attribute("name") == "CONC"
+    ][0]
+    pathlength_input = [
+     i for i in inputs if i.get_attribute("name") == "PATH"
+    ][0]
+    mean_mass_input.send_keys(str(residue_mass))
+    concentration_input.send_keys(str(concentration))
+    pathlength_input.send_keys(str(pathlength))
+    submit = [
+     i for i in inputs if i.get_attribute("value") == "submit"
+    ][0]
+    submit.click()
+
+    sleep(500)
 
 
 finally:
