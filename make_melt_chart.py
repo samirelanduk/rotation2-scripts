@@ -22,7 +22,11 @@ if len(sys.argv) <= 4:
 agent, run, sample = sys.argv[4].split(",")
 
 # What are the files here?
-data_files = sorted([f for f in os.listdir(data_path) if f[-4:] == ".gen"])
+
+data_files = sorted(
+ [f for f in os.listdir(data_path) if f[-4:] == ".gen"],
+ key=lambda k: int("".join([char for char in k.split()[-1] if char.isdigit()]))
+)
 
 # Open up the files and extract the delicious data
 all_series = []
