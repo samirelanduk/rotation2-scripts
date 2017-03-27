@@ -34,12 +34,13 @@ for index, data_file in enumerate(data_files):
         lines = f.readlines()
     lines = [line.split() for line in lines]
     lines = [line for line in lines if line[0][:3].isdigit()]
-    series = [[float(line[0]), float(line[1])] for line in lines]
+    series = [[float(line[0]), float(line[1]), temp] for line in lines]
     all_series.append(series)
 
 # Make chart of data
 for series in all_series:
     wavelengths = [line[0] for line in series]
     absorbance = [line[1] for line in series]
-    plt.plot(wavelengths, absorbance)
-plt.savefig(data_path + "/melt.png" , dpi=500)
+    plt.plot(wavelengths, absorbance, label=series[0][2])
+plt.legend(prop={'size':7})
+plt.savefig(data_path + "/melt.png", dpi=500)
