@@ -59,7 +59,7 @@ try:
     data_file_input = [
      i for i in inputs if i.get_attribute("name") == "FILE"
     ][0]
-    name_input.send_keys(data_files[0].split("/")[-1].split(".")[0])
+    name_input.send_keys(data_files[0].split("/")[-1].split(".")[0].replace("#", ""))
     data_file_input.send_keys(data_files[0])
 
     # Describe data file
@@ -150,7 +150,22 @@ try:
     ][0]
     submit.click()
 
-    sleep(500)
+    # Go to results page
+    inputs = browser.find_elements_by_tag_name("input")
+    submit = [
+     i for i in inputs if i.get_attribute("value") == "submit"
+    ][0]
+    submit.click()
+
+    # What are the results?
+    links = browser.find_elements_by_tag_name("a")
+    show_links = [a for a in links if a.text == "SHOW"]
+    show_links[0].click()
+    table = browser.find_elements_by_tag_name("table")[1]
+    values = [
+     [td.text for td in row.find_elements_by_tag_name("td")[1:]]
+    for row in table.find_elements_by_tag_name("tr")[1:]]
+    helix_content = float(values[-1][0]) + float(values[-1][1])
 
 
 finally:
