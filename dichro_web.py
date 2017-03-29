@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 from time import sleep, time
 from math import sqrt
+import matplotlib.pyplot as plt
 import json
 import inferi
 import os
@@ -33,6 +34,10 @@ if len(sys.argv) < 7:
     print("What is the pathlength in cm?\n")
     sys.exit()
 pathlength = float(sys.argv[6])
+if len(sys.argv) < 8:
+    print("Please provide a label in the form Agent,Run,Sample\n")
+    sys.exit()
+agent, run, sample = sys.argv[7].split(",")
 
 # Get the files
 files = os.listdir(location)
@@ -44,7 +49,7 @@ data_files = [os.path.abspath(location + "/" + f) for f in data_files]
 data_files = [{"location": f, "temperature": 20 + (5 * index)} for index, f in enumerate(data_files)]
 
 file_results = []
-for data_file in data_files[:3]:
+for data_file in data_files:
     program_results = {"temperature": data_file["temperature"]}
     for program in ("SELCON3", "CONTIN", "CDSSTR"):
         scale_extra = 0
@@ -139,7 +144,6 @@ for data_file in data_files[:3]:
                 scale_value = 1 + scale_extra
                 scale_input.clear()
                 scale_input.send_keys(str(scale_value))
-                sleep(3)
 
                 # Set output units and submit
                 output_units = [
@@ -208,3 +212,16 @@ for data_file in data_files[:3]:
 
 with open("%s/ss.json" % location, "w") as f:
     json.dump(file_results, f)
+
+x = [temp["temperature"] for temp in file_results]
+y = [temp["mean"] for temp in file_results]
+error = [temp["error"] for temp in file_results]
+plt.errorbar(x, y, yerr=error, fmt="o")
+# plt.scatter(x, y)
+
+plt.grid(True)
+plt.xlabel("Temperature (°C)")
+plt.ylabel("Helix Content (%)")
+plt.xlim(x[0] - 5, x[-1] + 5)
+plt.title("%s: Run %s, Sample %s" % (agent, run, sample))
+plt.savefig("%s/ss.png" % location)
