@@ -11,7 +11,7 @@ data_path = sys.argv[1]
 if len(sys.argv) <= 2:
     print("Please provide a label in the form Agent,Sample\n")
     sys.exit()
-agent, sample = sys.argv[2].split(",")
+agent, sample = sys.argv[2].split(",") if "," in sys.argv[2] else sys.argv[2], None
 if len(sys.argv) <= 3:
     print("Please provide a chart filename\n")
     sys.exit()
@@ -65,7 +65,10 @@ for series in all_series:
 plt.grid(True)
 plt.xlabel("Wavelength (nm)")
 plt.ylabel("Circular Dichroism")
-plt.title("%s: Sample %s" % (agent, sample))
+if sample:
+    plt.title("%s: Sample %s" % (agent, sample))
+else:
+    plt.title(agent)
 plt.xlim(all_series[0][-1][0], all_series[0][0][0])
 plt.ylim(-20, 40)
 plt.legend(prop={'size':7})

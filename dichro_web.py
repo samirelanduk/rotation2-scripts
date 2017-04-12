@@ -77,7 +77,7 @@ for data_file in data_files:
                 data_file_input = [
                  i for i in inputs if i.get_attribute("name") == "FILE"
                 ][0]
-                name_input.send_keys(data_file["location"].split("/")[-1].split(".")[0].replace("#", "") + "T" + str(int(time())))
+                name_input.send_keys(data_file["location"].split("/")[-1].split(".")[0].replace("#", "").replace("_", "") + "T" + str(int(time())))
                 data_file_input.send_keys(data_file["location"])
 
                 # Describe data file
@@ -158,7 +158,6 @@ for data_file in data_files:
 
                 # Provide mass, concentration, and pathlength
                 inputs = browser.find_elements_by_tag_name("input")
-                #84
                 mean_mass_input = [
                  i for i in inputs if i.get_attribute("name") == "MRW"
                 ][0]
@@ -210,18 +209,18 @@ for data_file in data_files:
     program_results["error"] = values.standard_deviation() / sqrt(len(values))
     file_results.append(program_results)
 
-with open("%s/ss.json" % location, "w") as f:
-    json.dump(file_results, f)
+    with open("%s/ss.json" % location, "w") as f:
+        json.dump(file_results, f)
 
-x = [temp["temperature"] for temp in file_results]
-y = [temp["mean"] for temp in file_results]
-error = [temp["error"] for temp in file_results]
-plt.errorbar(x, y, yerr=error, fmt="o")
-# plt.scatter(x, y)
+    x = [temp["temperature"] for temp in file_results]
+    y = [temp["mean"] for temp in file_results]
+    error = [temp["error"] for temp in file_results]
+    plt.errorbar(x, y, yerr=error, fmt="o")
+    # plt.scatter(x, y)
 
-plt.grid(True)
-plt.xlabel("Temperature (°C)")
-plt.ylabel("Helix Content (%)")
-plt.xlim(x[0] - 5, x[-1] + 5)
-plt.title("%s: Run %s, Sample %s" % (agent, run, sample))
-plt.savefig("%s/ss.png" % location)
+    plt.grid(True)
+    plt.xlabel("Temperature (°C)")
+    plt.ylabel("Helix Content (%)")
+    plt.xlim(x[0] - 5, x[-1] + 5)
+    plt.title("%s: Run %s, Sample %s" % (agent, run, sample))
+    plt.savefig("%s/ss.png" % location)
