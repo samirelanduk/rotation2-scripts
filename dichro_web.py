@@ -35,18 +35,22 @@ if len(sys.argv) < 7:
     sys.exit()
 pathlength = float(sys.argv[6])
 if len(sys.argv) < 8:
-    print("Please provide a label in the form Agent,Run,Sample\n")
+    print("Please provide a label in the form Agent,Sample\n")
     sys.exit()
-agent, run, sample = sys.argv[7].split(",")
+agent, sample = sys.argv[7].split(",") if "," in sys.argv[7] else (sys.argv[7], None)
+if len(sys.argv) < 9:
+    print("Please provide a chart filename\n")
+    sys.exit()
+chart_file_name = sys.argv[8]
 
 # Get the files
 files = os.listdir(location)
 data_files = sorted(
- [f for f in os.listdir(location) if f[-4:] == ".gen"],
- key=lambda k: int("".join([char for char in k.split()[-1] if char.isdigit()]))
+ [f for f in os.listdir(location) if f[-4:] == ".gen"]
 )
-data_files = [os.path.abspath(location + "/" + f) for f in data_files]
-data_files = [{"location": f, "temperature": 20 + (5 * index)} for index, f in enumerate(data_files)]
+data_files = [os.path.abspath(location + "/" + f) for f in data_files if "_" not in f]
+data_files = [{"location": f, "temperature": int(f.split(".")[0].split("/")[-1])} for f in data_files]
+
 
 file_results = []
 for data_file in data_files:
@@ -213,14 +217,26 @@ for data_file in data_files:
         json.dump(file_results, f)
 
     x = [temp["temperature"] for temp in file_results]
-    y = [temp["mean"] for temp in file_results]
-    error = [temp["error"] for temp in file_results]
-    plt.errorbar(x, y, yerr=error, fmt="o")
-    # plt.scatter(x, y)
+    y = [temp["mean"] * 100 for temp in file_results]
+    selcon = [temp["SELCON3"] * 100 for temp in file_results]
+    contin = [temp["CONTIN"] * 100 for temp in file_results]
+    cdsstr = [temp["CDSSTR"] * 100 for temp in file_results]
+    error = [temp["error"] * 100 for temp in file_results]
+    plt.errorbar(x, y, yerr=error, fmt="o", color="#000000", label="Average")
+
+    plt.scatter(x, selcon, color="#FF0000", marker="x", label="SELCON3")
+    plt.scatter(x, contin, color="#00FF00", marker="x", label="CONTIN")
+    plt.scatter(x, cdsstr, color="#0000FF", marker="x", label="CDSSTR")
 
     plt.grid(True)
     plt.xlabel("Temperature (°C)")
     plt.ylabel("Helix Content (%)")
     plt.xlim(x[0] - 5, x[-1] + 5)
-    plt.title("%s: Run %s, Sample %s" % (agent, run, sample))
-    plt.savefig("%s/ss.png" % location)
+    plt.ylim(0, 100)
+    if sample:
+        plt.title("%s: Sample %s" % (agent, sample))
+    else:
+        plt.title(agent)
+    plt.legend(prop={'size':8})
+    plt.savefig("../charts/secondary_structure/%s.png" % chart_file_name)
+    plt.clf()

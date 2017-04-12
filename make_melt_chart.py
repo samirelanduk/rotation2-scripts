@@ -72,4 +72,4 @@ else:
 plt.xlim(all_series[0][-1][0], all_series[0][0][0])
 plt.ylim(-20, 40)
 plt.legend(prop={'size':7})
-plt.savefig("../charts/%s.png" % chart_file_name, dpi=500)
+plt.savefig("../charts/melts/%s.png" % chart_file_name, dpi=500)
