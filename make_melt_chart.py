@@ -18,7 +18,7 @@ if len(sys.argv) <= 3:
 chart_file_name = sys.argv[3]
 
 # What are the files here?
-data_files = sorted([f for f in os.listdir(data_path) if f[-4:] == ".gen"])
+data_files = sorted([f for f in os.listdir(data_path) if f[-4:] == ".gen" and "90" not in f and "85" not in f])
 
 # Open up the files and extract the delicious data
 all_series = []
@@ -40,8 +40,8 @@ for data_file in data_files:
 for series in all_series:
     # What temperature is this?
     label = series[0][4]
-    color = "#0000FF"
-    if "_" not in label:
+    color = "#000000"
+    if "20" not in label:
         temp = int(label)
         relative_temp = 1 - ((temp - 20) / 70)
         color = hsl_to_rgb(0.45 * 360 * relative_temp, 100, 50)
@@ -54,22 +54,24 @@ for series in all_series:
 
     wavelengths = [line[0] for line in series]
     absorbance = [line[1] for line in series]
-    plt.plot(wavelengths, absorbance, color=color, label=label)
-    plt.fill_between(
+    if "cooled" in label:
+        plt.plot(wavelengths, absorbance, "--", color=color, label=label, linewidth=0.5)
+    elif "20" in label:
+        plt.plot(wavelengths, absorbance, color=color, label=label, linewidth=0.5, zorder=100)
+    else:
+        plt.plot(wavelengths, absorbance, color=color, label=label, linewidth=0.5)
+    '''plt.fill_between(
      wavelengths,
      [line[2] for line in series],
      [line[3] for line in series],
-     color=color, alpha=0.1
-    )
+     color=color, alpha=0.05
+    )'''
 
-plt.grid(True)
 plt.xlabel("Wavelength (nm)")
-plt.ylabel("Circular Dichroism")
-if sample:
-    plt.title("%s: Sample %s" % (agent, sample))
-else:
-    plt.title(agent)
-plt.xlim(all_series[0][-1][0], all_series[0][0][0])
-plt.ylim(-20, 40)
-plt.legend(prop={'size':7})
-plt.savefig("../charts/melts/%s.png" % chart_file_name, dpi=500)
+plt.ylabel("Delta Epsilon")
+plt.xlim([190, 280])
+plt.xticks([190, 200, 210, 220, 230, 240, 250, 260, 270, 280])
+plt.ylim(-10, 20)
+#plt.legend(prop={'size':7}, framealpha=1)
+plt.savefig("../charts/melts/%s.pdf" % chart_file_name, dpi=1000)
+plt.savefig("../charts/melts/%s.eps" % chart_file_name, dpi=1000)
